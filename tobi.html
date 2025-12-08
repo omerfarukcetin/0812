@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tobi'nin Havuç Macerası - v2</title>
+    <title>Tobi'nin Havuç Macerası - v3</title>
     <style>
         :root {
             --primary: #FF9F1C;
@@ -68,6 +68,32 @@
             align-items: center;
             gap: 10px;
         }
+
+        /* İlerleme Çubuğu */
+        .progress-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .level-dot {
+            width: 35px; height: 35px;
+            background: #ccc;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center; align-items: center;
+            font-weight: bold; color: white;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.2);
+            transition: all 0.2s;
+        }
+        
+        .level-dot:hover { transform: scale(1.1); }
+        .level-dot.active { background: var(--primary); transform: scale(1.2); border-color: var(--dark); z-index: 2; }
+        .level-dot.completed { background: #4CAF50; }
 
         .level-badge {
             background: var(--accent);
@@ -237,6 +263,12 @@
             box-shadow: 0 6px 0 #b71c1c; 
             font-size: 1.2rem;
         }
+        
+        .btn-prev {
+            background: #607D8B;
+            box-shadow: 0 6px 0 #455A64;
+            font-size: 1.2rem;
+        }
 
         .btn-loop {
             background: var(--loop-color);
@@ -309,6 +341,11 @@
 <div id="game-layout">
     <!-- SOL: Oyun Sahnesi -->
     <div class="game-board-section">
+        <!-- İlerleme Çubuğu -->
+        <div class="progress-container" id="progress-container">
+            <!-- JS ile doldurulacak -->
+        </div>
+
         <div class="level-badge" id="level-display">Seviye 1</div>
         <div id="grid">
             <!-- JS ile dolacak -->
@@ -338,6 +375,7 @@
 
         <div class="btn-action-group">
             <button class="btn-loop" id="loop-btn" onclick="openLoopModal()">🔄 TEKRARLA (Döngü)</button>
+            <button class="btn-prev" id="prev-btn" onclick="prevLevel()">⬅️ GERİ</button>
             <button class="btn-reset" onclick="resetLevel()">🗑️ SİL</button>
             <button class="btn-run" onclick="runAlgorithm()">▶️ BAŞLAT</button>
         </div>
@@ -390,6 +428,7 @@
     let commands = [];
     let playerPos = { x: 0, y: 0 };
     let isRunning = false;
+    let completedLevels = []; // Hangi bölümler bitti
 
     // Seviye Tasarımları (8 Seviye)
     const levels = [
@@ -484,6 +523,8 @@
     ];
 
     function initGame() {
+        // İlerleme kaydını sıfırla (eğer istenirse localStorage kullanılabilir ama çocuklar için karışık olabilir)
+        // completedLevels = []; 
         loadLevel(0);
     }
 
@@ -496,18 +537,51 @@
         document.getElementById('level-display').innerText = `Seviye ${lvlIndex + 1}`;
         document.getElementById('message-area').innerText = levels[lvlIndex].msg;
         
+        // Geri Dön butonunu yönet
+        if (currentLevel > 0) {
+            document.getElementById('prev-btn').style.visibility = 'visible';
+        } else {
+            document.getElementById('prev-btn').style.visibility = 'hidden';
+        }
+        
         // Loop butonunu göster/gizle
         const loopBtn = document.getElementById('loop-btn');
         if (levels[lvlIndex].allowLoop) {
             loopBtn.style.display = 'block';
-            loopBtn.parentElement.style.gridTemplateColumns = '1fr 1fr'; // Grid düzelt
+            loopBtn.parentElement.style.gridTemplateColumns = '1fr 1fr'; 
         } else {
             loopBtn.style.display = 'none';
         }
 
+        drawProgress();
         updateAlgorithmDisplay();
         drawGrid();
         resetPosition();
+    }
+
+    function drawProgress() {
+        const container = document.getElementById('progress-container');
+        container.innerHTML = '';
+        
+        for(let i = 0; i < levels.length; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'level-dot';
+            dot.innerText = i + 1;
+            
+            if (i === currentLevel) {
+                dot.classList.add('active');
+            } else if (completedLevels.includes(i)) {
+                dot.classList.add('completed');
+                dot.innerText = '✓';
+            }
+            
+            // Tıklama özelliği
+            dot.onclick = () => {
+                if (!isRunning) loadLevel(i);
+            }
+            
+            container.appendChild(dot);
+        }
     }
 
     function drawGrid() {
@@ -672,15 +746,24 @@
         const map = levels[currentLevel].map;
         if (map[playerPos.y][playerPos.x] === 'G') {
             triggerConfetti();
+            
+            // Bölümü tamamlandı olarak işaretle
+            if (!completedLevels.includes(currentLevel)) {
+                completedLevels.push(currentLevel);
+            }
+            drawProgress();
+
             document.getElementById('modal-title').innerText = "Harikasın!";
             document.getElementById('modal-msg').innerText = "Havuca ulaştın!";
             
             const btn = document.querySelector('#modal button');
             if(currentLevel === levels.length - 1) {
-                document.getElementById('modal-msg').innerText = "Tüm bölümleri bitirdin! Kodlama ustası oldun!";
-                btn.innerText = "Tekrar Oyna 🔄";
+                // FİNAL EKRANI - Burası artık sıfırlanmıyor, oyuncu burada kalıyor
+                document.getElementById('modal-msg').innerText = "Tüm bölümleri bitirdin! Artık bir kodlama ustasısın!";
+                btn.innerText = "Tekrar Oyna (Bölüm 1) 🔄";
                 btn.onclick = () => {
                      document.getElementById('modal').style.display = 'none';
+                     completedLevels = []; // İsteğe bağlı: Her şeyi sıfırla
                      initGame();
                 };
             } else {
@@ -715,6 +798,12 @@
         document.getElementById('modal').style.display = 'none';
         if (currentLevel < levels.length - 1) {
             loadLevel(currentLevel + 1);
+        }
+    }
+
+    function prevLevel() {
+        if (currentLevel > 0) {
+            loadLevel(currentLevel - 1);
         }
     }
     
