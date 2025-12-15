@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minik Kodlamacılar - Tema Dünyası</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            transition: background 0.5s ease;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Glassmorphism Utilities */
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+        }
+
+        /* Animations */
+        .pop-in { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        
+        @keyframes popIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .robot-move { 
+            transition: top 0.5s ease-in-out, left 0.5s ease-in-out, transform 0.3s ease; 
+        }
+
+        /* Hint Hand Animation */
+        .hint-hand {
+            position: absolute;
+            z-index: 50;
+            font-size: 2.5rem;
+            pointer-events: none;
+            animation: pointHint 1s infinite alternate;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.3));
+        }
+
+        @keyframes pointHint {
+            from { transform: translateY(0) scale(1); }
+            to { transform: translateY(10px) scale(1.1); }
+        }
+
+        /* Speech Bubble - Updated for smaller size */
+        .speech-bubble {
+            position: absolute;
+            background: white;
+            border-radius: 16px;
+            padding: 8px 12px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+            line-height: 1.2;
+            color: #333;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            z-index: 40;
+            min-width: 100px;
+            max-width: 180px;
+            animation: bubblePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid #3b82f6;
+        }
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 8px 8px 0;
+            border-style: solid;
+            border-color: #3b82f6 transparent transparent transparent;
+        }
+        
+        @keyframes bubblePop {
+            from { transform: scale(0) translateY(20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        /* Preview Path Dot - Standard Step */
+        .preview-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            position: absolute;
+            z-index: 5;
+            pointer-events: none;
+            box-shadow: 0 0 8px rgba(255,255,255,0.8);
+            animation: pulseDot 1.5s infinite;
+        }
+
+        /* Preview Path Target - Last Step Highlight */
+        .preview-target {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #fff;
+            border-radius: 50%;
+            position: absolute;
+            z-index: 6;
+            pointer-events: none;
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.8);
+            animation: pulseTarget 1.2s infinite;
+            background-color: #22c55e;
+        }
+
+        @keyframes pulseDot {
+            0% { transform: scale(0.8); opacity: 0.6; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.8); opacity: 0.6; }
+        }
+
+        @keyframes pulseTarget {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+
+        /* Dragging Styles */
+        .dragging {
+            opacity: 0.5;
+            transform: scale(0.9);
+            border: 2px dashed #666;
+        }
+        .drag-over {
+            border-left: 4px solid #3b82f6;
+            padding-left: 10px;
+        }
+
+        /* Confetti Particle */
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 50;
+            animation: explode 0.8s forwards ease-out;
+        }
+
+        @keyframes explode {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+        }
+
+        /* Star Animation */
+        .star-pop { animation: starPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: scale(0); }
+        .star-pop.delay-1 { animation-delay: 0.2s; }
+        .star-pop.delay-2 { animation-delay: 0.4s; }
+        .star-pop.delay-3 { animation-delay: 0.6s; }
+
+        @keyframes starPop {
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Theme Specific Transitions */
+        .theme-transition { transition: all 0.5s ease; }
+
+        .btn-press:active {
+            transform: translateY(4px);
+            box-shadow: none !important;
+        }
+        
+        #code-area::-webkit-scrollbar { width: 8px; }
+        #code-area::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+        #code-area::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 4px; }
+    </style>
+</head>
+<body id="main-body" class="h-screen flex flex-col overflow-hidden bg-cyan-100 text-slate-800 select-none">
+
+    <!-- Navbar & Theme Selector -->
+    <header class="w-full glass z-20 px-4 md:px-6 py-3 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-3">
+            <button onclick="toggleLevelMenu()" class="bg-white p-2 rounded-xl shadow-md border-2 border-slate-200 hover:scale-105 transition active:scale-95 flex flex-col items-center justify-center w-14 h-14">
+                <span class="text-2xl">🗺️</span>
+                <span class="text-[9px] font-bold text-slate-500 leading-none mt-1">HARİTA</span>
+            </button>
+            <div class="hidden md:block w-[1px] h-10 bg-slate-300 mx-2"></div>
+            <div id="header-icon" class="text-4xl filter drop-shadow-md hidden sm:block">🐿️</div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black text-slate-700 tracking-tight leading-none">MİNİK<br><span class="text-blue-500" id="brand-color">KODLAMACILAR</span></h1>
+            </div>
+        </div>
+
+        <!-- Theme Selector -->
+        <div class="hidden lg:flex gap-2 bg-slate-100/50 p-1.5 rounded-2xl">
+            <button onclick="setTheme('ice')" class="text-2xl p-2 hover:bg-white rounded-xl transition hover:scale-110" title="Buz Devri">🐿️</button>
+            <button onclick="setTheme('dino')" class="text-2xl p-2 hover:bg-white rounded-xl transition hover:scale-110" title="Dinozor">🦖</button>
+            <button onclick="setTheme('car')" class="text-2xl p-2 hover:bg-white rounded-xl transition hover:scale-110" title="Yarış">🏎️</button>
+            <button onclick="setTheme('lion')" class="text-2xl p-2 hover:bg-white rounded-xl transition hover:scale-110" title="Safari">🦁</button>
+            <button onclick="setTheme('rabbit')" class="text-2xl p-2 hover:bg-white rounded-xl transition hover:scale-110" title="Orman">🐰</button>
+        </div>
+
+        <div class="glass px-4 py-2 rounded-xl text-center min-w-[140px]">
+            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Hedef</div>
+            <div id="instruction-text" class="font-bold text-slate-700 text-sm md:text-base">Meşe Palamuduna Git</div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col md:flex-row gap-4 md:gap-6 p-4 md:p-8 max-w-[1600px] mx-auto w-full h-full relative">
+        
+        <!-- Left: Game Board -->
+        <div class="flex-1 flex flex-col justify-center items-center relative">
+            
+            <!-- Level Indicator -->
+            <div class="absolute top-0 left-0 glass px-6 py-2 rounded-full text-slate-600 mb-4 flex flex-col shadow-sm">
+                <span class="text-xs font-bold uppercase text-slate-400" id="chapter-title">BÖLÜM 1</span>
+                <span class="text-lg font-black" id="level-indicator">Seviye 1</span>
+            </div>
+
+            <!-- The Grid -->
+            <div class="bg-white/40 p-3 rounded-[2rem] shadow-2xl backdrop-blur-sm border-4 border-white/60 relative z-10">
+                <div id="game-board" class="grid grid-cols-5 gap-2 md:gap-3 w-[320px] h-[320px] md:w-[450px] md:h-[450px] relative">
+                    <!-- Cells generated via JS -->
+                </div>
+            </div>
+
+            <!-- Victory Modal with Stars -->
+            <div id="result-modal" class="hidden absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-3xl">
+                <div class="bg-white p-6 md:p-8 rounded-[2rem] shadow-2xl text-center transform scale-110 max-w-sm mx-4 w-full border-4 border-green-100">
+                    <div class="text-5xl mb-2 animate-bounce">🎉</div>
+                    <h2 class="text-3xl font-black text-slate-800 mb-2">Başardın!</h2>
+                    
+                    <!-- Star Rating -->
+                    <div class="flex justify-center gap-2 mb-4 h-16 items-center" id="star-container">
+                        <!-- Stars injected by JS -->
+                    </div>
+
+                    <p id="modal-msg" class="text-slate-500 mb-6 font-medium text-sm">Harika bir iş çıkardın.</p>
+                    <button onclick="nextLevel()" class="w-full bg-green-500 hover:bg-green-600 text-white text-xl font-bold py-3 md:py-4 rounded-2xl shadow-[0_6px_0_#15803d] btn-press transition-all">
+                        Sonraki Seviye ➡️
+                    </button>
+                    <button onclick="retryLevel()" class="mt-3 w-full text-slate-400 font-bold hover:text-slate-600">
+                        Tekrar Oyna 🔄
+                    </button>
+                </div>
+            </div>
+
+             <!-- Fail Modal -->
+             <div id="fail-modal" class="hidden absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-3xl">
+                <div class="bg-white p-6 md:p-8 rounded-[2rem] shadow-2xl text-center transform scale-110 max-w-sm mx-4 w-full border-4 border-orange-100">
+                    <div class="text-5xl mb-4 animate-pulse">🤔</div>
+                    <h2 class="text-3xl font-black text-slate-800 mb-2">Eyvah!</h2>
+                    <p class="text-slate-500 mb-6 font-medium">Bir şeyler ters gitti.</p>
+                    <button onclick="retryLevel()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white text-xl font-bold py-4 rounded-2xl shadow-[0_6px_0_#a16207] btn-press transition-all">
+                        Tekrar Dene 🔄
+                    </button>
+                </div>
+            </div>
+
+            <!-- Level Selection Modal (Map) -->
+            <div id="level-menu" class="hidden absolute inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md rounded-3xl">
+                <div class="bg-white p-6 rounded-[2rem] shadow-2xl max-w-2xl w-full mx-4 h-[80%] flex flex-col">
+                    <div class="flex justify-between items-center mb-4 border-b pb-2">
+                        <h2 class="text-2xl font-black text-slate-700">Seviye Haritası</h2>
+                        <div class="flex gap-2">
+                            <button onclick="resetProgress()" class="text-xs text-red-400 hover:text-red-600 font-bold px-2">Sıfırla</button>
+                            <button onclick="toggleLevelMenu()" class="bg-slate-100 hover:bg-slate-200 p-2 rounded-full">✕</button>
+                        </div>
+                    </div>
+                    <div class="flex-1 overflow-y-auto grid grid-cols-3 gap-4 p-2" id="level-grid">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Coding Interface -->
+        <div class="w-full md:w-[420px] lg:w-[480px] flex flex-col gap-4 h-full max-h-[calc(100vh-140px)]">
+            
+            <!-- Toolbox -->
+            <div class="glass p-4 rounded-3xl shrink-0 relative">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold text-slate-400 uppercase">Bloklar</span>
+                </div>
+                <!-- Buttons Container -->
+                <div class="grid grid-cols-5 gap-2 md:gap-3" id="toolbox-buttons">
+                    <button onclick="addCommand('up')" id="btn-up" class="btn-press bg-blue-500 hover:bg-blue-400 text-white aspect-square rounded-2xl shadow-[0_4px_0_#1e40af] md:shadow-[0_6px_0_#1e40af] flex items-center justify-center text-3xl md:text-4xl transition-colors">⬆️</button>
+                    <button onclick="addCommand('down')" id="btn-down" class="btn-press bg-violet-500 hover:bg-violet-400 text-white aspect-square rounded-2xl shadow-[0_4px_0_#5b21b6] md:shadow-[0_6px_0_#5b21b6] flex items-center justify-center text-3xl md:text-4xl transition-colors">⬇️</button>
+                    <button onclick="addCommand('left')" id="btn-left" class="btn-press bg-amber-500 hover:bg-amber-400 text-white aspect-square rounded-2xl shadow-[0_4px_0_#92400e] md:shadow-[0_6px_0_#92400e] flex items-center justify-center text-3xl md:text-4xl transition-colors">⬅️</button>
+                    <button onclick="addCommand('right')" id="btn-right" class="btn-press bg-rose-500 hover:bg-rose-400 text-white aspect-square rounded-2xl shadow-[0_4px_0_#9f1239] md:shadow-[0_6px_0_#9f1239] flex items-center justify-center text-3xl md:text-4xl transition-colors">➡️</button>
+                    <button onclick="addCommand('collect')" id="btn-collect" class="btn-press bg-emerald-500 hover:bg-emerald-400 text-white aspect-square rounded-2xl shadow-[0_4px_0_#065f46] md:shadow-[0_6px_0_#065f46] flex items-center justify-center text-3xl md:text-4xl transition-colors" title="Al/Topla">🖐️</button>
+                </div>
+                <!-- Hint Hand Container -->
+                <div id="hint-container" class="absolute inset-0 pointer-events-none z-50 hidden"></div>
+            </div>
+
+            <!-- Workspace -->
+            <div class="flex-1 glass flex flex-col rounded-3xl overflow-hidden border-4 border-slate-200/50">
+                <div class="bg-slate-100/80 px-4 py-2 border-b border-slate-200 flex justify-between items-center shrink-0">
+                    <span class="font-bold text-slate-600 text-sm md:text-base">Kod Alanı</span>
+                    <button onclick="clearWorkspace()" class="text-slate-400 hover:text-red-500 transition-colors bg-white px-2 py-1 rounded-lg border border-slate-200 shadow-sm text-xs font-bold uppercase" title="Hepsini Sil">
+                        Temizle
+                    </button>
+                </div>
+
+                <!-- Code Grid Area -->
+                <div id="code-area" class="flex-1 overflow-y-auto p-4 bg-slate-50/50 scroll-smooth">
+                    <div id="code-grid" class="grid grid-cols-4 gap-2 content-start">
+                        <div class="col-span-full text-center mt-10 opacity-30 select-none">
+                            <div class="text-5xl md:text-6xl mb-2">🧩</div>
+                            <div class="font-bold text-slate-800 text-sm md:text-base">Blokları buraya diz</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Run Button Area -->
+                <div class="p-3 md:p-4 bg-white/60 backdrop-blur-md border-t border-slate-200 shrink-0 flex gap-2">
+                    
+                    <!-- Speed Toggle -->
+                    <button onclick="toggleSpeed()" id="speed-btn" class="bg-indigo-100 hover:bg-indigo-200 text-2xl w-16 rounded-2xl border-2 border-indigo-200 shadow-sm flex items-center justify-center transition-colors">
+                        🐢
+                    </button>
+
+                    <button onclick="runCode()" id="run-btn" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white text-xl md:text-2xl font-black py-3 md:py-4 rounded-2xl shadow-[0_6px_0_#0f172a] btn-press flex items-center justify-center gap-3 transition-all">
+                        <span class="text-2xl md:text-3xl">▶️</span> BAŞLAT
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // --- Game Config & Persistence ---
+        const SAVE_KEY = 'minik_kodlamacilar_save_v1';
+        let gameSpeed = 600; // ms (Slow default)
+        let isFastMode = false;
+        let hintTimer = null;
+        let hintDelay = 15000; // 15 seconds for hint
+
+        // --- Theme Engine ---
+        const themes = {
+            ice: { name: 'Buz Devri', bgClass: 'bg-cyan-100', cellClass: 'bg-cyan-50 border-cyan-100', obstacleIcon: '🧊', playerIcon: '🐿️', defaultFacing: 'left', targetPrimary: '🌰', targetSecondary: '🥥', dotColor: '#ef4444', accentText: 'text-cyan-600' },
+            dino: { name: 'Dinozor', bgClass: 'bg-stone-200', cellClass: 'bg-stone-50 border-stone-200', obstacleIcon: '🌋', playerIcon: '🦖', defaultFacing: 'left', targetPrimary: '🍖', targetSecondary: '🥚', dotColor: '#3b82f6', accentText: 'text-stone-600' },
+            car: { name: 'Yarış', bgClass: 'bg-slate-200', cellClass: 'bg-slate-50 border-slate-300', obstacleIcon: '🚧', playerIcon: '🏎️', defaultFacing: 'right', targetPrimary: '🏁', targetSecondary: '⛽', dotColor: '#ef4444', accentText: 'text-slate-600' },
+            lion: { name: 'Safari', bgClass: 'bg-amber-100', cellClass: 'bg-orange-50 border-orange-200', obstacleIcon: '🌵', playerIcon: '🦁', defaultFacing: 'left', targetPrimary: '🥩', targetSecondary: '💧', dotColor: '#3b82f6', accentText: 'text-orange-600' },
+            rabbit: { name: 'Orman', bgClass: 'bg-green-100', cellClass: 'bg-green-50 border-green-200', obstacleIcon: '🪵', playerIcon: '🐰', defaultFacing: 'left', targetPrimary: '🥕', targetSecondary: '🥦', dotColor: '#ef4444', accentText: 'text-green-600' }
+        };
+
+        let currentTheme = themes.ice; // Default
+
+        // --- Game Logic ---
+        let currentLevelIndex = 0;
+        let workspace = [];
+        let isRunning = false;
+        let playerPos = { x: 0, y: 0 };
+        let playerFacing = 'right'; 
+        let collectedItems = 0;
+        let maxUnlockedLevel = 0;
+        let levelStars = {};
+
+        // BÖLÜMLER
+        const levels = [
+            // --- BÖLÜM 1 ---
+            { id: 1, chapter: "BÖLÜM 1", subLevel: 1, gridSize: 5, start: { x: 0, y: 2 }, items: [{ x: 3, y: 2, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'reach_target', optimal: 3, dialogue: "Hey! Karnım çok aç, şu palamuda gitmeme yardım et!" },
+            { id: 2, chapter: "BÖLÜM 1", subLevel: 2, gridSize: 5, start: { x: 2, y: 0 }, items: [{ x: 2, y: 3, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'reach_target', optimal: 3, dialogue: "Bu sefer yol biraz daha uzun..." },
+            { id: 3, chapter: "BÖLÜM 1", subLevel: 3, gridSize: 5, start: { x: 1, y: 1 }, items: [{ x: 3, y: 3, type: 'primary', collected: false }], obstacles: [{ x: 2, y: 1 }], prefilled: [], goal: 'reach_target', optimal: 4, dialogue: "Dikkat et, önümde bir engel var!" },
+
+            // --- BÖLÜM 2 ---
+            { id: 4, chapter: "BÖLÜM 2", subLevel: 1, gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 4, y: 0, type: 'primary', collected: false }], obstacles: [], prefilled: ['right', 'right'], goal: 'reach_target', optimal: 4, dialogue: "Biri kodu yarım bırakmış. Devamını sen getirir misin?" },
+            { id: 5, chapter: "BÖLÜM 2", subLevel: 2, gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 2, y: 2, type: 'primary', collected: false }], obstacles: [{x:1, y:1}], prefilled: ['right', 'right', 'down'], goal: 'reach_target', optimal: 4, dialogue: "Yarım kodu tamamlayıp hedefe ulaşalım." },
+            { id: 6, chapter: "BÖLÜM 2", subLevel: 3, gridSize: 5, start: { x: 0, y: 4 }, items: [{ x: 4, y: 4, type: 'primary', collected: false }], obstacles: [{x:1, y:2}], prefilled: ['right', 'right', 'up', 'right'], goal: 'reach_target', optimal: 5, dialogue: "Biraz dolambaçlı bir yol..." },
+
+            // --- BÖLÜM 3 ---
+            { id: 7, chapter: "BÖLÜM 3", subLevel: 1, gridSize: 5, start: { x: 1, y: 2 }, items: [{ x: 4, y: 2, type: 'primary', collected: false }], obstacles: [{x:2, y:1}], prefilled: ['right', 'up', 'right'], goal: 'reach_target', optimal: 3, dialogue: "Bir şeyler yanlış... Kodu düzeltir misin?" },
+            { id: 8, chapter: "BÖLÜM 3", subLevel: 2, gridSize: 5, start: { x: 2, y: 2 }, items: [{ x: 2, y: 4, type: 'primary', collected: false }], obstacles: [{x:3, y:3}], prefilled: ['down', 'right', 'down'], goal: 'reach_target', optimal: 2, dialogue: "Bu kod beni duvara çarptırıyor!" }, 
+            { id: 9, chapter: "BÖLÜM 3", subLevel: 3, gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 4, y: 4, type: 'primary', collected: false }], obstacles: [{x:2, y:2}], prefilled: ['right', 'right', 'down', 'down', 'left', 'right'], goal: 'reach_target', optimal: 8, dialogue: "Gereksiz hareketler var sanki..." },
+
+            // --- BÖLÜM 4 ---
+            { id: 10, chapter: "BÖLÜM 4", subLevel: 1, gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 3, y: 3, type: 'primary', collected: false }], obstacles: [{x:1, y:0}, {x:3, y:2}, {x:1, y:2}], prefilled: [], goal: 'reach_target', optimal: 6, dialogue: "Labirent gibi! Doğru yolu bulabilir misin?" },
+            { id: 11, chapter: "BÖLÜM 4", subLevel: 2, gridSize: 5, start: { x: 0, y: 2 }, items: [{ x: 4, y: 2, type: 'primary', collected: false }], obstacles: [{x:2, y:2}, {x:2, y:1}, {x:2, y:3}], prefilled: [], goal: 'reach_target', optimal: 6, dialogue: "Etrafından dolaşmamız gerekecek." }, 
+            { id: 12, chapter: "BÖLÜM 4", subLevel: 3, gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 4, y: 0, type: 'primary', collected: false }], obstacles: [{x:1, y:0}, {x:3, y:0}, {x:1, y:1}, {x:3, y:1}], prefilled: [], goal: 'reach_target', optimal: 8, dialogue: "Zikzak çizmemiz lazım!" }, 
+
+            // --- BÖLÜM 5 ---
+            { id: 13, chapter: "BÖLÜM 5", subLevel: 1, gridSize: 5, start: { x: 2, y: 2 }, items: [{ x: 2, y: 0, type: 'primary', collected: false, order: 1 }], obstacles: [], prefilled: [], goal: 'collect_ordered', optimal: 3, dialogue: "Hedefin üstüne gelince 'Topla' bloğunu kullan." },
+            { id: 14, chapter: "BÖLÜM 5", subLevel: 2, gridSize: 5, start: { x: 0, y: 2 }, items: [{ x: 2, y: 2, type: 'primary', collected: false, order: 1 }, { x: 4, y: 2, type: 'secondary', collected: false, order: 2 }], obstacles: [], prefilled: [], goal: 'collect_ordered', optimal: 5, dialogue: "Önce birinciyi, sonra ikinciyi topla!" },
+            { id: 15, chapter: "BÖLÜM 5", subLevel: 3, gridSize: 5, start: { x: 2, y: 2 }, items: [{ x: 2, y: 0, type: 'primary', collected: false, order: 1 }, { x: 2, y: 4, type: 'secondary', collected: false, order: 2 }], obstacles: [{x:1, y:2}, {x:3, y:2}], prefilled: [], goal: 'collect_ordered', optimal: 6, dialogue: "Hepsini topla ve bölümü bitir!" }
+        ];
+
+        // --- Functions ---
+
+        function initGame() {
+            loadProgress();
+            loadLevel(currentLevelIndex); // Loads the saved level or 0
+        }
+
+        // --- Persistence ---
+        function saveProgress() {
+            const data = {
+                level: currentLevelIndex,
+                maxUnlocked: maxUnlockedLevel,
+                stars: levelStars
+            };
+            localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem(SAVE_KEY);
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    // Only restore maxUnlocked and stars. 
+                    // currentLevelIndex is better set to the furthest unlocked level or last played
+                    maxUnlockedLevel = data.maxUnlocked || 0;
+                    levelStars = data.stars || {};
+                    currentLevelIndex = data.level > maxUnlockedLevel ? maxUnlockedLevel : data.level;
+                } catch (e) {
+                    console.error("Save file corrupted, resetting.");
+                }
+            }
+        }
+
+        function resetProgress() {
+            if(confirm("Tüm ilerlemen silinecek. Emin misin?")) {
+                localStorage.removeItem(SAVE_KEY);
+                location.reload();
+            }
+        }
+
+        function toggleSpeed() {
+            isFastMode = !isFastMode;
+            gameSpeed = isFastMode ? 200 : 600;
+            const btn = document.getElementById('speed-btn');
+            btn.innerText = isFastMode ? '🐰' : '🐢';
+            btn.classList.toggle('bg-indigo-100');
+            btn.classList.toggle('bg-green-100');
+        }
+
+        function setTheme(themeKey) {
+            currentTheme = themes[themeKey];
+            document.getElementById('main-body').className = `h-screen flex flex-col overflow-hidden theme-transition ${currentTheme.bgClass} text-slate-800 select-none`;
+            document.getElementById('header-icon').innerText = currentTheme.playerIcon;
+            document.getElementById('brand-color').className = currentTheme.accentText;
+            renderBoard();
+        }
+
+        function loadLevel(idx) {
+            if (idx > maxUnlockedLevel) return;
+
+            resetHintTimer(); // Stop any pending hints
+            currentLevelIndex = idx;
+            const level = levels[currentLevelIndex];
+            
+            document.getElementById('chapter-title').innerText = level.chapter;
+            document.getElementById('level-indicator').innerText = `Seviye ${level.subLevel}`;
+            
+            document.getElementById('result-modal').classList.add('hidden');
+            document.getElementById('fail-modal').classList.add('hidden');
+            document.getElementById('level-menu').classList.add('hidden');
+            
+            // Instruction
+            const instructionEl = document.getElementById('instruction-text');
+            if (level.goal === 'collect_ordered') instructionEl.innerText = "Sırayla Topla!";
+            else if (level.chapter.includes("HATA")) instructionEl.innerText = "Hatayı Düzelt";
+            else if (level.chapter.includes("TAMAMLA")) instructionEl.innerText = "Kodu Tamamla";
+            else instructionEl.innerText = "Hedefe Ulaş";
+
+            // Reset
+            workspace = [...level.prefilled];
+            playerPos = { ...level.start };
+            collectedItems = 0;
+            isRunning = false;
+            level.items.forEach(i => i.collected = false);
+            playerFacing = 'right';
+
+            renderWorkspace();
+            renderBoard();
+            
+            // Dialogue
+            if (level.dialogue) showDialogue(level.dialogue, level.start.x, level.start.y);
+
+            // Save current position as we loaded it
+            saveProgress();
+            startHintTimer();
+        }
+
+        function showDialogue(text, x, y) {
+            // Remove old bubbles
+            const old = document.querySelectorAll('.speech-bubble');
+            old.forEach(el => el.remove());
+
+            const cell = document.getElementById(`cell-${x}-${y}`);
+            if (cell) {
+                const bubble = document.createElement('div');
+                bubble.className = 'speech-bubble';
+                bubble.innerText = text;
+                // Position above the cell slightly
+                bubble.style.bottom = '100%';
+                bubble.style.marginBottom = '15px';
+                cell.appendChild(bubble);
+
+                // Auto hide
+                setTimeout(() => {
+                    if(bubble) bubble.remove();
+                }, 4000);
+            }
+        }
+
+        // --- Hint System ---
+        function startHintTimer() {
+            clearTimeout(hintTimer);
+            document.getElementById('hint-container').innerHTML = '';
+            hintTimer = setTimeout(showHint, hintDelay);
+        }
+
+        function resetHintTimer() {
+            clearTimeout(hintTimer);
+            document.getElementById('hint-container').innerHTML = '';
+            // Only restart if not running
+            if (!isRunning) hintTimer = setTimeout(showHint, hintDelay);
+        }
+
+        function showHint() {
+            if (isRunning) return;
+            const level = levels[currentLevelIndex];
+            
+            // Very basic heuristic: Find first uncollected item and suggest move towards it
+            // This is naive (doesn't account for walls perfectly) but good enough for 1st grade levels
+            const target = level.items.find(i => !i.collected);
+            if (!target) return;
+
+            // Simulate current workspace to find where robot ends up
+            let simX = level.start.x;
+            let simY = level.start.y;
+            workspace.forEach(cmd => {
+                if(cmd === 'up') simY--;
+                if(cmd === 'down') simY++;
+                if(cmd === 'left') simX--;
+                if(cmd === 'right') simX++;
+            });
+
+            let suggestedBtnId = '';
+            
+            // Prioritize X or Y diff? simple check
+            if (target.x > simX) suggestedBtnId = 'btn-right';
+            else if (target.x < simX) suggestedBtnId = 'btn-left';
+            else if (target.y > simY) suggestedBtnId = 'btn-down';
+            else if (target.y < simY) suggestedBtnId = 'btn-up';
+            else if (simX === target.x && simY === target.y) suggestedBtnId = 'btn-collect';
+
+            // Check for obstacle collision in suggestion (Basic 1-step lookahead)
+            // If suggested move hits wall, try other axis? (Skipped for brevity, naive works 90%)
+
+            if (suggestedBtnId) {
+                const btn = document.getElementById(suggestedBtnId);
+                const container = document.getElementById('hint-container');
+                const hand = document.createElement('div');
+                hand.className = 'hint-hand';
+                hand.innerText = '👆';
+                
+                // Calculate position relative to container
+                const btnRect = btn.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                
+                hand.style.left = (btnRect.left - containerRect.left + btnRect.width/2 - 20) + 'px';
+                hand.style.top = (btnRect.top - containerRect.top + btnRect.height) + 'px';
+                
+                container.appendChild(hand);
+            }
+        }
+
+        // --- Drag & Drop ---
+        let dragSrcEl = null;
+        let dragSrcIndex = -1;
+
+        function handleDragStart(e) {
+            dragSrcEl = this;
+            dragSrcIndex = parseInt(this.getAttribute('data-index'));
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.innerHTML);
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) e.preventDefault();
+            this.classList.add('drag-over');
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) e.stopPropagation();
+            this.classList.remove('drag-over');
+
+            const dragDestIndex = parseInt(this.getAttribute('data-index'));
+
+            if (dragSrcIndex !== dragDestIndex) {
+                // Swap in array
+                const item = workspace[dragSrcIndex];
+                workspace.splice(dragSrcIndex, 1);
+                workspace.splice(dragDestIndex, 0, item);
+                
+                renderWorkspace();
+                renderBoard();
+                resetHintTimer();
+            }
+            return false;
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            const items = document.querySelectorAll('#code-grid .group');
+            items.forEach(item => item.classList.remove('drag-over'));
+        }
+
+
+        // --- Render Board & Workspace ---
+
+        function calculatePath() {
+            if (isRunning) return [];
+            const level = levels[currentLevelIndex];
+            let simX = level.start.x;
+            let simY = level.start.y;
+            let path = [];
+            workspace.forEach(cmd => {
+                if (cmd === 'collect') return;
+                let nextX = simX, nextY = simY;
+                if (cmd === 'up') nextY--;
+                if (cmd === 'down') nextY++;
+                if (cmd === 'left') nextX--;
+                if (cmd === 'right') nextX++;
+                if (nextX >= 0 && nextX < level.gridSize && nextY >= 0 && nextY < level.gridSize) {
+                    path.push({x: nextX, y: nextY});
+                    simX = nextX;
+                    simY = nextY;
+                }
+            });
+            return path;
+        }
+
+        function renderBoard() {
+            const level = levels[currentLevelIndex];
+            const board = document.getElementById('game-board');
+            board.innerHTML = '';
+            
+            const previewPath = calculatePath();
+            const lastStep = previewPath.length > 0 ? previewPath[previewPath.length - 1] : null;
+
+            for (let y = 0; y < level.gridSize; y++) {
+                for (let x = 0; x < level.gridSize; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = `relative rounded-2xl flex items-center justify-center text-4xl shadow-sm border-2 transition-all duration-300 ${currentTheme.cellClass}`;
+                    cell.id = `cell-${x}-${y}`;
+
+                    const obs = level.obstacles.find(o => o.x === x && o.y === y);
+                    if (obs) cell.innerText = currentTheme.obstacleIcon;
+
+                    const item = level.items.find(i => i.x === x && i.y === y && !i.collected);
+                    if (item) cell.innerText = item.type === 'primary' ? currentTheme.targetPrimary : currentTheme.targetSecondary;
+
+                    const inPath = previewPath.some(p => p.x === x && p.y === y);
+                    if (inPath && !obs && !isRunning) {
+                         const isLastStep = lastStep && lastStep.x === x && lastStep.y === y;
+                         const dot = document.createElement('div');
+                         dot.className = isLastStep ? 'preview-target' : 'preview-dot';
+                         if(!isLastStep) dot.style.backgroundColor = currentTheme.dotColor;
+                         cell.appendChild(dot);
+                    }
+
+                    if (playerPos.x === x && playerPos.y === y) {
+                        const player = document.createElement('div');
+                        player.innerText = currentTheme.playerIcon;
+                        player.className = 'robot-move absolute text-5xl filter drop-shadow-xl z-10 transition-transform duration-300';
+                        let scale = 1;
+                        if (currentTheme.defaultFacing === 'left') {
+                            if (playerFacing === 'right') scale = -1;
+                        } else {
+                            if (playerFacing === 'left') scale = -1;
+                        }
+                        player.style.transform = `scaleX(${scale})`;
+                        cell.appendChild(player);
+                    }
+                    board.appendChild(cell);
+                }
+            }
+        }
+
+        function renderWorkspace() {
+            const grid = document.getElementById('code-grid');
+            grid.innerHTML = '';
+            
+            if (workspace.length === 0) {
+                 grid.innerHTML = `
+                    <div class="col-span-full text-center mt-10 opacity-30 select-none">
+                        <div class="text-5xl md:text-6xl mb-2">🧩</div>
+                        <div class="font-bold text-slate-800 text-sm md:text-base">Blokları buraya diz</div>
+                    </div>`;
+                 return;
+            }
+
+            workspace.forEach((cmd, index) => {
+                let color = '', icon = '';
+                switch(cmd) {
+                    case 'up': color = 'bg-blue-500 border-blue-600'; icon = '⬆️'; break;
+                    case 'down': color = 'bg-violet-500 border-violet-600'; icon = '⬇️'; break;
+                    case 'left': color = 'bg-amber-500 border-amber-600'; icon = '⬅️'; break;
+                    case 'right': color = 'bg-rose-500 border-rose-600'; icon = '➡️'; break;
+                    case 'collect': color = 'bg-emerald-500 border-emerald-600'; icon = '🖐️'; break;
+                }
+
+                const el = document.createElement('div');
+                el.className = `pop-in flex items-center justify-center p-2 rounded-xl text-white font-bold text-xl shadow-sm border-b-4 ${color} relative group h-14 w-full select-none cursor-grab active:cursor-grabbing`;
+                el.setAttribute('draggable', 'true');
+                el.setAttribute('data-index', index);
+                
+                // Drag Events
+                el.addEventListener('dragstart', handleDragStart);
+                el.addEventListener('dragover', handleDragOver);
+                el.addEventListener('dragleave', handleDragLeave);
+                el.addEventListener('drop', handleDrop);
+                el.addEventListener('dragend', handleDragEnd);
+
+                el.innerHTML = `
+                    <span class="absolute top-1 left-1.5 text-[10px] opacity-70 leading-none">${index + 1}</span>
+                    <span class="text-2xl">${icon}</span>
+                    <button onclick="removeBlock(${index})" class="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs shadow-md scale-0 group-hover:scale-100 transition-transform">✕</button>
+                `;
+                grid.appendChild(el);
+            });
+            const area = document.getElementById('code-area');
+            area.scrollTop = area.scrollHeight;
+        }
+
+        // --- Commands ---
+
+        function addCommand(cmd) {
+            if (isRunning) return;
+            workspace.push(cmd);
+            renderWorkspace();
+            renderBoard();
+            resetHintTimer();
+        }
+
+        function removeBlock(idx) {
+            if (isRunning) return;
+            workspace.splice(idx, 1);
+            renderWorkspace();
+            renderBoard();
+            resetHintTimer();
+        }
+
+        function clearWorkspace() {
+            if (isRunning) return;
+            workspace = [];
+            renderWorkspace();
+            renderBoard();
+            resetHintTimer();
+        }
+
+        async function runCode() {
+            if (isRunning || workspace.length === 0) return;
+            isRunning = true;
+            document.getElementById('run-btn').classList.add('opacity-50', 'cursor-not-allowed');
+
+            const level = levels[currentLevelIndex];
+            playerPos = { ...level.start };
+            level.items.forEach(i => i.collected = false);
+            collectedItems = 0;
+            playerFacing = 'right';
+
+            renderBoard();
+
+            for (let i = 0; i < workspace.length; i++) {
+                await executeCommand(workspace[i]);
+                await new Promise(r => setTimeout(r, gameSpeed)); // Use gameSpeed variable
+            }
+
+            checkWin();
+            isRunning = false;
+            document.getElementById('run-btn').classList.remove('opacity-50', 'cursor-not-allowed');
+            resetHintTimer();
+        }
+
+        async function executeCommand(cmd) {
+            const level = levels[currentLevelIndex];
+            let newX = playerPos.x;
+            let newY = playerPos.y;
+
+            if (cmd === 'left') playerFacing = 'left';
+            if (cmd === 'right') playerFacing = 'right';
+
+            if (cmd === 'up') newY--;
+            if (cmd === 'down') newY++;
+            if (cmd === 'left') newX--;
+            if (cmd === 'right') newX++;
+
+            if (newX < 0 || newX >= level.gridSize || newY < 0 || newY >= level.gridSize) {
+                shakeBoard(); return;
+            }
+            const obs = level.obstacles.find(o => o.x === newX && o.y === newY);
+            if (obs) {
+                shakeBoard(); return;
+            }
+
+            if (cmd === 'collect') {
+                const item = level.items.find(i => i.x === playerPos.x && i.y === playerPos.y && !i.collected);
+                if (item) {
+                    if (level.goal === 'collect_ordered') {
+                        if (item.order === collectedItems + 1) {
+                            item.collected = true;
+                            collectedItems++;
+                            createConfetti(playerPos.x, playerPos.y);
+                        } else {
+                            shakeBoard();
+                        }
+                    } else {
+                        item.collected = true;
+                        createConfetti(playerPos.x, playerPos.y);
+                    }
+                } else {
+                    shakeBoard();
+                }
+            } else {
+                playerPos.x = newX;
+                playerPos.y = newY;
+            }
+            renderBoard();
+        }
+
+        function createConfetti(x, y) {
+            const cell = document.getElementById(`cell-${x}-${y}`);
+            if(!cell) return;
+            for(let i=0; i<12; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.backgroundColor = ['#f43f5e', '#3b82f6', '#fbbf24', '#10b981'][Math.floor(Math.random()*4)];
+                p.style.left = '50%';
+                p.style.top = '50%';
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 30 + Math.random() * 30;
+                const tx = Math.cos(angle) * dist + 'px';
+                const ty = Math.sin(angle) * dist + 'px';
+                p.style.setProperty('--tx', tx);
+                p.style.setProperty('--ty', ty);
+                cell.appendChild(p);
+                setTimeout(() => p.remove(), 800);
+            }
+        }
+
+        function shakeBoard() {
+            const b = document.getElementById('game-board').parentElement;
+            b.animate([
+                { transform: 'translateX(0)' },
+                { transform: 'translateX(-10px)' },
+                { transform: 'translateX(10px)' },
+                { transform: 'translateX(0)' }
+            ], { duration: 300 });
+        }
+
+        function checkWin() {
+            const level = levels[currentLevelIndex];
+            let won = false;
+            if (level.goal === 'reach_target') {
+                const targets = level.items;
+                const onTarget = targets.find(t => t.x === playerPos.x && t.y === playerPos.y);
+                if (onTarget) won = true;
+            } else {
+                won = level.items.every(i => i.collected);
+            }
+
+            if (won) {
+                if (currentLevelIndex === maxUnlockedLevel && currentLevelIndex < levels.length - 1) {
+                    maxUnlockedLevel++;
+                }
+                const blocksUsed = workspace.length;
+                const optimal = level.optimal || blocksUsed;
+                let stars = 1;
+                if (blocksUsed <= optimal) stars = 3;
+                else if (blocksUsed <= optimal + 2) stars = 2;
+                
+                if (!levelStars[currentLevelIndex] || stars > levelStars[currentLevelIndex]) {
+                    levelStars[currentLevelIndex] = stars;
+                }
+                saveProgress(); // Save on win
+                showWinModal(stars);
+            } else {
+                document.getElementById('fail-modal').classList.remove('hidden');
+            }
+        }
+
+        function showWinModal(stars) {
+            const container = document.getElementById('star-container');
+            container.innerHTML = '';
+            for(let i=1; i<=3; i++) {
+                const s = document.createElement('div');
+                s.className = `text-5xl transition-all duration-500 ${i <= stars ? 'text-yellow-400 star-pop delay-'+i : 'text-gray-200'}`;
+                s.innerText = '⭐';
+                container.appendChild(s);
+            }
+            document.getElementById('result-modal').classList.remove('hidden');
+        }
+
+        function nextLevel() {
+            if (currentLevelIndex < levels.length - 1) {
+                loadLevel(currentLevelIndex + 1);
+            } else {
+                alert("Tebrikler! Tüm seviyeleri bitirdin.");
+                toggleLevelMenu();
+            }
+        }
+
+        function retryLevel() {
+            loadLevel(currentLevelIndex);
+        }
+
+        function toggleLevelMenu() {
+            const menu = document.getElementById('level-menu');
+            menu.classList.toggle('hidden');
+            if (!menu.classList.contains('hidden')) renderLevelGrid();
+        }
+
+        function renderLevelGrid() {
+            const grid = document.getElementById('level-grid');
+            grid.innerHTML = '';
+            levels.forEach((lvl, idx) => {
+                const isLocked = idx > maxUnlockedLevel;
+                const stars = levelStars[idx] || 0;
+                const btn = document.createElement('button');
+                btn.className = `p-4 rounded-xl flex flex-col items-center justify-center relative border-2 ${isLocked ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-white border-blue-200 hover:border-blue-400 text-slate-700 shadow-sm'}`;
+                if (isLocked) {
+                    btn.innerHTML = `<span class="text-2xl mb-1">🔒</span><span class="text-xs font-bold">Seviye ${idx+1}</span>`;
+                } else {
+                    let starStr = '';
+                    for(let i=0; i<3; i++) starStr += i < stars ? '⭐' : '☆';
+                    btn.innerHTML = `
+                        <span class="text-xl font-bold mb-1">${idx+1}</span>
+                        <span class="text-[10px] text-yellow-500 tracking-tighter">${starStr}</span>
+                    `;
+                    btn.onclick = () => loadLevel(idx);
+                }
+                if(idx === currentLevelIndex) btn.classList.add('ring-2', 'ring-blue-500');
+                grid.appendChild(btn);
+            });
+        }
+
+        // Init
+        initGame();
+
+    </script>
+</body>
+</html>
