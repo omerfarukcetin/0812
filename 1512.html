@@ -211,9 +211,9 @@
             <!-- Level Indicator & Direct Navigation -->
             <div class="absolute top-0 left-0 glass px-2 py-2 rounded-full text-slate-600 mb-4 flex items-center shadow-sm gap-2">
                 <button onclick="prevLevel()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-slate-100 shadow text-slate-500 font-bold transition">❮</button>
-                <div class="flex flex-col items-center px-2 min-w-[100px]">
-                    <span class="text-[10px] font-bold uppercase text-slate-400 leading-none" id="chapter-title">BÖLÜM 1</span>
-                    <span class="text-lg font-black leading-tight" id="level-indicator">Seviye 1</span>
+                <div class="flex flex-col items-center px-2 min-w-[120px]">
+                    <span class="text-[10px] font-bold uppercase text-slate-400 leading-none" id="chapter-title">TEMEL</span>
+                    <span class="text-lg font-black leading-tight" id="level-indicator">BÖLÜM 1</span>
                 </div>
                 <button onclick="nextLevel()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-slate-100 shadow text-slate-500 font-bold transition">❯</button>
             </div>
@@ -235,7 +235,7 @@
 
                     <p id="modal-msg" class="text-slate-500 mb-6 font-medium text-sm">Harika bir iş çıkardın.</p>
                     <button onclick="nextLevel()" class="w-full bg-green-500 hover:bg-green-600 text-white text-xl font-bold py-3 md:py-4 rounded-2xl shadow-[0_6px_0_#15803d] btn-press transition-all">
-                        Sonraki Seviye ➡️
+                        Sonraki Bölüm ➡️
                     </button>
                     <button onclick="retryLevel()" class="mt-3 w-full text-slate-400 font-bold hover:text-slate-600">
                         Tekrar Oyna 🔄
@@ -344,13 +344,13 @@
     </main>
 
     <script>
-        const SAVE_KEY = 'minik_kodlamacilar_save_v3'; // Incremented key for new structure
+        const SAVE_KEY = 'minik_kodlamacilar_save_v4'; // Key updated for linear progression
         let gameSpeed = 600;
         let isFastMode = false;
         let hintTimer = null;
         let hintDelay = 15000;
         
-        let activeLoopCount = 1; // Current loop multiplier
+        let activeLoopCount = 1;
 
         const themes = {
             ice: { name: 'Buz Devri', bgClass: 'bg-cyan-100', cellClass: 'bg-cyan-50 border-cyan-100', obstacleIcon: '🧊', playerIcon: '🐿️', defaultFacing: 'left', targetPrimary: '🌰', targetSecondary: '🥥', dotColor: '#ef4444', accentText: 'text-cyan-600' },
@@ -370,47 +370,39 @@
         let maxUnlockedLevel = 0;
         let levelStars = {};
 
-        // --- NEW LEVEL STRUCTURE ---
-        // Chapters:
-        // 1: Yerleştirme (1-3)
-        // 2: Engellerden Kaçış (4-6) - REPLACED "Eksik Tamamlama"
-        // 3: Hata Ayıklama (7-9)
-        // 4: Karmaşık Yollar (10-12)
-        // 5: Hepsini Topla (13-15)
-        // 6: Döngüler / Tekrar (16-20) - NEW
-
+        // Simplified Levels (No sub-levels, linear chapters)
         const levels = [
-            // --- BÖLÜM 1: YERLEŞTİRME ---
-            { id: 1, chapter: "BÖLÜM 1: Giriş", subLevel: 1, gridSize: 5, start: { x: 0, y: 2 }, items: [{ x: 3, y: 2, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'reach_target', optimal: 3, dialogue: "Merhaba! Palamuda gitmeme yardım et." },
-            { id: 2, chapter: "BÖLÜM 1: Giriş", subLevel: 2, gridSize: 5, start: { x: 2, y: 0 }, items: [{ x: 2, y: 3, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'reach_target', optimal: 3, dialogue: "Aşağıya doğru gitmeliyiz." },
-            { id: 3, chapter: "BÖLÜM 1: Giriş", subLevel: 3, gridSize: 5, start: { x: 1, y: 1 }, items: [{ x: 3, y: 3, type: 'primary', collected: false }], obstacles: [{ x: 2, y: 1 }], prefilled: [], goal: 'reach_target', optimal: 4, dialogue: "Önümde taş var, etrafından dolaş!" },
+            // --- TEMEL HAREKETLER ---
+            { id: 1, category: "TEMEL HAREKETLER", gridSize: 5, start: { x: 0, y: 2 }, items: [{ x: 3, y: 2, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'reach_target', optimal: 3, dialogue: "Merhaba! Palamuda gitmeme yardım et." },
+            { id: 2, category: "TEMEL HAREKETLER", gridSize: 5, start: { x: 2, y: 0 }, items: [{ x: 2, y: 3, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'reach_target', optimal: 3, dialogue: "Aşağıya doğru gitmeliyiz." },
+            { id: 3, category: "TEMEL HAREKETLER", gridSize: 5, start: { x: 1, y: 1 }, items: [{ x: 3, y: 3, type: 'primary', collected: false }], obstacles: [{ x: 2, y: 1 }], prefilled: [], goal: 'reach_target', optimal: 4, dialogue: "Önümde taş var, etrafından dolaş!" },
 
-            // --- BÖLÜM 2: ENGELLERDEN KAÇIŞ (NEW) ---
-            { id: 4, chapter: "BÖLÜM 2: Engeller", subLevel: 1, gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 4, y: 0, type: 'primary', collected: false }], obstacles: [{x:2, y:0}, {x:2, y:1}], prefilled: [], goal: 'reach_target', optimal: 6, dialogue: "Duvar var! Aşağıdan dolaş." },
-            { id: 5, chapter: "BÖLÜM 2: Engeller", subLevel: 2, gridSize: 5, start: { x: 0, y: 2 }, items: [{ x: 4, y: 2, type: 'primary', collected: false }], obstacles: [{x:2, y:2}, {x:2, y:1}, {x:2, y:3}], prefilled: [], goal: 'reach_target', optimal: 6, dialogue: "Bu duvar çok uzun, etrafından geçmelisin." },
-            { id: 6, chapter: "BÖLÜM 2: Engeller", subLevel: 3, gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 4, y: 4, type: 'primary', collected: false }], obstacles: [{x:1, y:1}, {x:2, y:2}, {x:3, y:3}], prefilled: [], goal: 'reach_target', optimal: 8, dialogue: "Çapraz gidemem, zikzak çizmeliyiz!" },
+            // --- ENGELLERDEN KAÇIŞ ---
+            { id: 4, category: "ENGELLER", gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 4, y: 0, type: 'primary', collected: false }], obstacles: [{x:2, y:0}, {x:2, y:1}], prefilled: [], goal: 'reach_target', optimal: 6, dialogue: "Duvar var! Aşağıdan dolaş." },
+            { id: 5, category: "ENGELLER", gridSize: 5, start: { x: 0, y: 2 }, items: [{ x: 4, y: 2, type: 'primary', collected: false }], obstacles: [{x:2, y:2}, {x:2, y:1}, {x:2, y:3}], prefilled: [], goal: 'reach_target', optimal: 6, dialogue: "Bu duvar çok uzun, etrafından geçmelisin." },
+            { id: 6, category: "ENGELLER", gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 4, y: 4, type: 'primary', collected: false }], obstacles: [{x:1, y:1}, {x:2, y:2}, {x:3, y:3}], prefilled: [], goal: 'reach_target', optimal: 8, dialogue: "Çapraz gidemem, zikzak çizmeliyiz!" },
 
-            // --- BÖLÜM 3: HATA AYIKLAMA ---
-            { id: 7, chapter: "BÖLÜM 3: Hata Düzelt", subLevel: 1, gridSize: 5, start: { x: 1, y: 2 }, items: [{ x: 4, y: 2, type: 'primary', collected: false }], obstacles: [{x:2, y:1}], prefilled: [{cmd:'right'}, {cmd:'up'}, {cmd:'right'}], goal: 'reach_target', optimal: 3, dialogue: "Bir şeyler yanlış... Yukarıda taş var!" },
-            { id: 8, chapter: "BÖLÜM 3: Hata Düzelt", subLevel: 2, gridSize: 5, start: { x: 2, y: 2 }, items: [{ x: 2, y: 4, type: 'primary', collected: false }], obstacles: [{x:3, y:3}], prefilled: [{cmd:'down'}, {cmd:'right'}, {cmd:'down'}], goal: 'reach_target', optimal: 2, dialogue: "Sağa gidersem kaybolurum!" }, 
-            { id: 9, chapter: "BÖLÜM 3: Hata Düzelt", subLevel: 3, gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 4, y: 4, type: 'primary', collected: false }], obstacles: [{x:2, y:2}], prefilled: [{cmd:'right'}, {cmd:'right'}, {cmd:'down'}, {cmd:'down'}, {cmd:'left'}, {cmd:'right'}], goal: 'reach_target', optimal: 8, dialogue: "Gereksiz hareketleri siler misin?" },
+            // --- HATA AYIKLAMA ---
+            { id: 7, category: "HATA DÜZELTME", gridSize: 5, start: { x: 1, y: 2 }, items: [{ x: 4, y: 2, type: 'primary', collected: false }], obstacles: [{x:2, y:1}], prefilled: [{cmd:'right'}, {cmd:'up'}, {cmd:'right'}], goal: 'reach_target', optimal: 3, dialogue: "Bir şeyler yanlış... Yukarıda taş var!" },
+            { id: 8, category: "HATA DÜZELTME", gridSize: 5, start: { x: 2, y: 2 }, items: [{ x: 2, y: 4, type: 'primary', collected: false }], obstacles: [{x:3, y:3}], prefilled: [{cmd:'down'}, {cmd:'right'}, {cmd:'down'}], goal: 'reach_target', optimal: 2, dialogue: "Sağa gidersem kaybolurum!" }, 
+            { id: 9, category: "HATA DÜZELTME", gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 4, y: 4, type: 'primary', collected: false }], obstacles: [{x:2, y:2}], prefilled: [{cmd:'right'}, {cmd:'right'}, {cmd:'down'}, {cmd:'down'}, {cmd:'left'}, {cmd:'right'}], goal: 'reach_target', optimal: 8, dialogue: "Gereksiz hareketleri siler misin?" },
 
-            // --- BÖLÜM 4: KARMAŞIK YOLLAR ---
-            { id: 10, chapter: "BÖLÜM 4: Labirent", subLevel: 1, gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 3, y: 3, type: 'primary', collected: false }], obstacles: [{x:1, y:0}, {x:3, y:2}, {x:1, y:2}], prefilled: [], goal: 'reach_target', optimal: 6, dialogue: "Doğru yolu bulabilir misin?" },
-            { id: 11, chapter: "BÖLÜM 4: Labirent", subLevel: 2, gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 4, y: 0, type: 'primary', collected: false }], obstacles: [{x:1, y:0}, {x:3, y:0}, {x:1, y:1}, {x:3, y:1}], prefilled: [], goal: 'reach_target', optimal: 8, dialogue: "Zikzak çizmemiz lazım!" }, 
-            { id: 12, chapter: "BÖLÜM 4: Labirent", subLevel: 3, gridSize: 5, start: { x: 2, y: 2 }, items: [{ x: 2, y: 2, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'reach_target', optimal: 0, dialogue: "Zaten hedeftesin! (Şaka şaka, hedef şurada ->)", start: {x:0, y:0}, items: [{x:4, y:4, type:'primary'}] }, // Fixed logic below
+            // --- KARMAŞIK YOLLAR ---
+            { id: 10, category: "LABİRENT", gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 3, y: 3, type: 'primary', collected: false }], obstacles: [{x:1, y:0}, {x:3, y:2}, {x:1, y:2}], prefilled: [], goal: 'reach_target', optimal: 6, dialogue: "Doğru yolu bulabilir misin?" },
+            { id: 11, category: "LABİRENT", gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 4, y: 0, type: 'primary', collected: false }], obstacles: [{x:1, y:0}, {x:3, y:0}, {x:1, y:1}, {x:3, y:1}], prefilled: [], goal: 'reach_target', optimal: 8, dialogue: "Zikzak çizmemiz lazım!" }, 
+            { id: 12, category: "LABİRENT", gridSize: 5, start: { x: 2, y: 2 }, items: [{ x: 2, y: 2, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'reach_target', optimal: 0, dialogue: "Zaten hedeftesin! (Şaka şaka, hedef şurada ->)", start: {x:0, y:0}, items: [{x:4, y:4, type:'primary'}] }, 
 
-            // --- BÖLÜM 5: HEPSİNİ TOPLA ---
-            { id: 13, chapter: "BÖLÜM 5: Topla", subLevel: 1, gridSize: 5, start: { x: 2, y: 2 }, items: [{ x: 2, y: 0, type: 'primary', collected: false }, { x: 2, y: 4, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'collect_all', optimal: 4, dialogue: "İki tane var! İkisini de al." },
-            { id: 14, chapter: "BÖLÜM 5: Topla", subLevel: 2, gridSize: 5, start: { x: 0, y: 2 }, items: [{ x: 2, y: 2, type: 'primary', collected: false }, { x: 4, y: 2, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'collect_all', optimal: 4, dialogue: "Sırayla hepsini topla!" },
-            { id: 15, chapter: "BÖLÜM 5: Topla", subLevel: 3, gridSize: 5, start: { x: 2, y: 2 }, items: [{ x: 2, y: 0, type: 'primary', collected: false }, { x: 2, y: 4, type: 'primary', collected: false }, { x: 0, y: 2, type: 'primary', collected: false }, { x: 4, y: 2, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'collect_all', optimal: 8, dialogue: "Dört tarafım palamut dolu!" },
+            // --- HEPSİNİ TOPLA ---
+            { id: 13, category: "TOPLAMA", gridSize: 5, start: { x: 2, y: 2 }, items: [{ x: 2, y: 0, type: 'primary', collected: false }, { x: 2, y: 4, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'collect_all', optimal: 4, dialogue: "İki tane var! İkisini de al." },
+            { id: 14, category: "TOPLAMA", gridSize: 5, start: { x: 0, y: 2 }, items: [{ x: 2, y: 2, type: 'primary', collected: false }, { x: 4, y: 2, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'collect_all', optimal: 4, dialogue: "Sırayla hepsini topla!" },
+            { id: 15, category: "TOPLAMA", gridSize: 5, start: { x: 2, y: 2 }, items: [{ x: 2, y: 0, type: 'primary', collected: false }, { x: 2, y: 4, type: 'primary', collected: false }, { x: 0, y: 2, type: 'primary', collected: false }, { x: 4, y: 2, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'collect_all', optimal: 8, dialogue: "Dört tarafım palamut dolu!" },
 
-            // --- BÖLÜM 6: DÖNGÜLER (NEW LOOP LEVELS) ---
-            { id: 16, chapter: "BÖLÜM 6: Döngüler", subLevel: 1, gridSize: 5, start: { x: 0, y: 2 }, items: [{ x: 4, y: 2, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'reach_target', optimal: 1, hasLoops: true, dialogue: "Çok uzak! '4x' butonuna basıp Sağa tıkla." },
-            { id: 17, chapter: "BÖLÜM 6: Döngüler", subLevel: 2, gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 4, y: 4, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'reach_target', optimal: 2, hasLoops: true, dialogue: "4 Sağa, sonra 4 Aşağı. Kolayca yapabilirsin!" },
-            { id: 18, chapter: "BÖLÜM 6: Döngüler", subLevel: 3, gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 0, y: 4, type: 'primary', collected: false }], obstacles: [{x:1, y:1}, {x:2, y:2}, {x:3, y:3}], prefilled: [], goal: 'reach_target', optimal: 3, dialogue: "Köşeden dolaş: 4 Sağa, 4 Aşağı, 4 Sola." },
-            { id: 19, chapter: "BÖLÜM 6: Döngüler", subLevel: 4, gridSize: 5, start: { x: 2, y: 2 }, items: [{ x: 2, y: 0, type: 'primary', collected: false }, { x: 2, y: 4, type: 'primary', collected: false }, { x: 0, y: 2, type: 'primary', collected: false }, { x: 4, y: 2, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'collect_all', optimal: 4, hasLoops: true, dialogue: "Hepsini tek blokla toplayabilirsin!" },
-            { id: 20, chapter: "BÖLÜM 6: Döngüler", subLevel: 5, gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 4, y: 0, type: 'primary', collected: false }, { x: 4, y: 4, type: 'primary', collected: false }, { x: 0, y: 4, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'collect_all', optimal: 3, hasLoops: true, dialogue: "Büyük bir kare çizerek hepsini topla." }
+            // --- DÖNGÜLER ---
+            { id: 16, category: "DÖNGÜLER", gridSize: 5, start: { x: 0, y: 2 }, items: [{ x: 4, y: 2, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'reach_target', optimal: 1, hasLoops: true, dialogue: "Çok uzak! '4x' butonuna basıp Sağa tıkla." },
+            { id: 17, category: "DÖNGÜLER", gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 4, y: 4, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'reach_target', optimal: 2, hasLoops: true, dialogue: "4 Sağa, sonra 4 Aşağı. Kolayca yapabilirsin!" },
+            { id: 18, category: "DÖNGÜLER", gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 0, y: 4, type: 'primary', collected: false }], obstacles: [{x:1, y:1}, {x:2, y:2}, {x:3, y:3}], prefilled: [], goal: 'reach_target', optimal: 3, dialogue: "Köşeden dolaş: 4 Sağa, 4 Aşağı, 4 Sola." },
+            { id: 19, category: "DÖNGÜLER", gridSize: 5, start: { x: 2, y: 2 }, items: [{ x: 2, y: 0, type: 'primary', collected: false }, { x: 2, y: 4, type: 'primary', collected: false }, { x: 0, y: 2, type: 'primary', collected: false }, { x: 4, y: 2, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'collect_all', optimal: 4, hasLoops: true, dialogue: "Hepsini tek blokla toplayabilirsin!" },
+            { id: 20, category: "DÖNGÜLER", gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 4, y: 0, type: 'primary', collected: false }, { x: 4, y: 4, type: 'primary', collected: false }, { x: 0, y: 4, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'collect_all', optimal: 3, hasLoops: true, dialogue: "Büyük bir kare çizerek hepsini topla." }
         ];
 
         function initGame() {
@@ -469,14 +461,15 @@
             if (idx > maxUnlockedLevel) return;
 
             resetHintTimer();
-            activeLoopCount = 1; // Reset loop multiplier
+            activeLoopCount = 1;
             updateLoopUI();
 
             currentLevelIndex = idx;
             const level = levels[currentLevelIndex];
             
-            document.getElementById('chapter-title').innerText = level.chapter;
-            document.getElementById('level-indicator').innerText = `Seviye ${level.subLevel}`;
+            // Simplified Header Text
+            document.getElementById('chapter-title').innerText = level.category;
+            document.getElementById('level-indicator').innerText = `BÖLÜM ${currentLevelIndex + 1}`;
             
             document.getElementById('result-modal').classList.add('hidden');
             document.getElementById('fail-modal').classList.add('hidden');
@@ -484,11 +477,11 @@
             
             const instructionEl = document.getElementById('instruction-text');
             if (level.goal === 'collect_all') instructionEl.innerText = "Hepsini Topla!";
-            else if (level.chapter.includes("HATA")) instructionEl.innerText = "Hatayı Düzelt";
-            else if (level.chapter.includes("TAMAMLA")) instructionEl.innerText = "Kodu Tamamla";
+            else if (level.category.includes("HATA")) instructionEl.innerText = "Hatayı Düzelt";
+            else if (level.category.includes("TAMAMLA")) instructionEl.innerText = "Kodu Tamamla";
             else instructionEl.innerText = "Hedefe Ulaş";
 
-            // Loop Controls Visibility
+            // Loop Controls
             const loopControls = document.getElementById('loop-controls');
             const loopIndicator = document.getElementById('loop-indicator');
             if (level.hasLoops) {
@@ -499,8 +492,6 @@
                 loopIndicator.classList.add('hidden');
             }
 
-            // Handle prefilled data which might be simple strings or objects
-            // Convert simple strings to command objects {cmd, count}
             workspace = level.prefilled.map(item => {
                 if (typeof item === 'string') return { cmd: item, count: 1 };
                 return { cmd: item.cmd, count: item.count || 1 };
@@ -522,12 +513,8 @@
         }
 
         function setLoop(count) {
-            // Toggle logic: if clicking same, reset to 1
-            if (activeLoopCount === count) {
-                activeLoopCount = 1;
-            } else {
-                activeLoopCount = count;
-            }
+            if (activeLoopCount === count) activeLoopCount = 1;
+            else activeLoopCount = count;
             updateLoopUI();
         }
 
@@ -602,7 +589,6 @@
             });
 
             let suggestedBtnId = '';
-            // Basic hint logic - doesn't account for walls or loops perfectly
             if (target.x > simX) suggestedBtnId = 'btn-right';
             else if (target.x < simX) suggestedBtnId = 'btn-left';
             else if (target.y > simY) suggestedBtnId = 'btn-down';
@@ -983,7 +969,7 @@
                 const btn = document.createElement('button');
                 btn.className = `p-4 rounded-xl flex flex-col items-center justify-center relative border-4 transition-all ${isLocked ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-white border-blue-200 hover:border-blue-400 hover:scale-105 text-slate-700 shadow-md'}`;
                 if (isLocked) {
-                    btn.innerHTML = `<span class="text-3xl mb-1 grayscale opacity-50">🔒</span><span class="text-xs font-bold">Seviye ${idx+1}</span>`;
+                    btn.innerHTML = `<span class="text-3xl mb-1 grayscale opacity-50">🔒</span><span class="text-xs font-bold">BÖLÜM ${idx+1}</span>`;
                 } else {
                     let starStr = '';
                     for(let i=0; i<3; i++) starStr += i < stars ? '⭐' : '☆';
