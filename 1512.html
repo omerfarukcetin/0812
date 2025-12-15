@@ -16,7 +16,7 @@
 
         /* Glassmorphism Utilities */
         .glass {
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(12px);
             border: 2px solid rgba(255, 255, 255, 0.6);
         }
@@ -48,7 +48,7 @@
             to { transform: translateY(10px) scale(1.1); }
         }
 
-        /* Speech Bubble - Updated for smaller size */
+        /* Speech Bubble */
         .speech-bubble {
             position: absolute;
             background: white;
@@ -82,7 +82,7 @@
             to { transform: scale(1) translateY(0); opacity: 1; }
         }
 
-        /* Preview Path Dot - Standard Step */
+        /* Preview Path Dot */
         .preview-dot {
             width: 12px;
             height: 12px;
@@ -94,7 +94,6 @@
             animation: pulseDot 1.5s infinite;
         }
 
-        /* Preview Path Target - Last Step Highlight */
         .preview-target {
             width: 24px;
             height: 24px;
@@ -157,7 +156,6 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        /* Theme Specific Transitions */
         .theme-transition { transition: all 0.5s ease; }
 
         .btn-press:active {
@@ -174,15 +172,18 @@
 
     <!-- Navbar & Theme Selector -->
     <header class="w-full glass z-20 px-4 md:px-6 py-3 flex justify-between items-center shadow-sm">
-        <div class="flex items-center gap-3">
-            <button onclick="toggleLevelMenu()" class="bg-white p-2 rounded-xl shadow-md border-2 border-slate-200 hover:scale-105 transition active:scale-95 flex flex-col items-center justify-center w-14 h-14">
-                <span class="text-2xl">🗺️</span>
-                <span class="text-[9px] font-bold text-slate-500 leading-none mt-1">HARİTA</span>
+        <div class="flex items-center gap-4">
+            <!-- Big Level Menu Button -->
+            <button onclick="toggleLevelMenu()" class="bg-yellow-400 hover:bg-yellow-300 text-slate-800 px-4 py-2 rounded-2xl shadow-[0_4px_0_#d97706] active:shadow-none active:translate-y-1 transition-all flex items-center gap-2 border-2 border-yellow-500">
+                <span class="text-2xl">📂</span>
+                <span class="font-black text-sm md:text-base uppercase tracking-wider">BÖLÜMLER</span>
             </button>
-            <div class="hidden md:block w-[1px] h-10 bg-slate-300 mx-2"></div>
-            <div id="header-icon" class="text-4xl filter drop-shadow-md hidden sm:block">🐿️</div>
-            <div>
-                <h1 class="text-xl md:text-2xl font-black text-slate-700 tracking-tight leading-none">MİNİK<br><span class="text-blue-500" id="brand-color">KODLAMACILAR</span></h1>
+
+            <div class="hidden md:block w-[1px] h-10 bg-slate-300"></div>
+            
+            <div class="flex items-center gap-2">
+                <div id="header-icon" class="text-4xl filter drop-shadow-md hidden sm:block">🐿️</div>
+                <h1 class="hidden md:block text-xl font-black text-slate-700 tracking-tight leading-none">MİNİK<br><span class="text-blue-500" id="brand-color">KODLAMACILAR</span></h1>
             </div>
         </div>
 
@@ -207,10 +208,14 @@
         <!-- Left: Game Board -->
         <div class="flex-1 flex flex-col justify-center items-center relative">
             
-            <!-- Level Indicator -->
-            <div class="absolute top-0 left-0 glass px-6 py-2 rounded-full text-slate-600 mb-4 flex flex-col shadow-sm">
-                <span class="text-xs font-bold uppercase text-slate-400" id="chapter-title">BÖLÜM 1</span>
-                <span class="text-lg font-black" id="level-indicator">Seviye 1</span>
+            <!-- Level Indicator & Direct Navigation -->
+            <div class="absolute top-0 left-0 glass px-2 py-2 rounded-full text-slate-600 mb-4 flex items-center shadow-sm gap-2">
+                <button onclick="prevLevel()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-slate-100 shadow text-slate-500 font-bold transition">❮</button>
+                <div class="flex flex-col items-center px-2 min-w-[100px]">
+                    <span class="text-[10px] font-bold uppercase text-slate-400 leading-none" id="chapter-title">BÖLÜM 1</span>
+                    <span class="text-lg font-black leading-tight" id="level-indicator">Seviye 1</span>
+                </div>
+                <button onclick="nextLevel()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-slate-100 shadow text-slate-500 font-bold transition">❯</button>
             </div>
 
             <!-- The Grid -->
@@ -226,10 +231,7 @@
                     <div class="text-5xl mb-2 animate-bounce">🎉</div>
                     <h2 class="text-3xl font-black text-slate-800 mb-2">Başardın!</h2>
                     
-                    <!-- Star Rating -->
-                    <div class="flex justify-center gap-2 mb-4 h-16 items-center" id="star-container">
-                        <!-- Stars injected by JS -->
-                    </div>
+                    <div class="flex justify-center gap-2 mb-4 h-16 items-center" id="star-container"></div>
 
                     <p id="modal-msg" class="text-slate-500 mb-6 font-medium text-sm">Harika bir iş çıkardın.</p>
                     <button onclick="nextLevel()" class="w-full bg-green-500 hover:bg-green-600 text-white text-xl font-bold py-3 md:py-4 rounded-2xl shadow-[0_6px_0_#15803d] btn-press transition-all">
@@ -254,16 +256,22 @@
             </div>
 
             <!-- Level Selection Modal (Map) -->
-            <div id="level-menu" class="hidden absolute inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md rounded-3xl">
-                <div class="bg-white p-6 rounded-[2rem] shadow-2xl max-w-2xl w-full mx-4 h-[80%] flex flex-col">
-                    <div class="flex justify-between items-center mb-4 border-b pb-2">
-                        <h2 class="text-2xl font-black text-slate-700">Seviye Haritası</h2>
+            <div id="level-menu" class="hidden absolute inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md rounded-3xl p-4">
+                <div class="bg-white p-6 rounded-[2rem] shadow-2xl max-w-3xl w-full h-[85%] flex flex-col border-4 border-yellow-400">
+                    <div class="flex justify-between items-center mb-6 border-b pb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="text-4xl">🗺️</span>
+                            <div>
+                                <h2 class="text-3xl font-black text-slate-800">Seviye Haritası</h2>
+                                <p class="text-slate-500 font-bold text-sm">İstediğin bölümü seç ve oyna!</p>
+                            </div>
+                        </div>
                         <div class="flex gap-2">
-                            <button onclick="resetProgress()" class="text-xs text-red-400 hover:text-red-600 font-bold px-2">Sıfırla</button>
-                            <button onclick="toggleLevelMenu()" class="bg-slate-100 hover:bg-slate-200 p-2 rounded-full">✕</button>
+                            <button onclick="resetProgress()" class="text-sm text-red-400 hover:text-red-600 font-bold px-3 py-2 bg-red-50 rounded-lg">Sıfırla</button>
+                            <button onclick="toggleLevelMenu()" class="bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-full font-bold text-slate-600 text-xl">✕</button>
                         </div>
                     </div>
-                    <div class="flex-1 overflow-y-auto grid grid-cols-3 gap-4 p-2" id="level-grid">
+                    <div class="flex-1 overflow-y-auto grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 p-2 content-start" id="level-grid">
                         <!-- Generated by JS -->
                     </div>
                 </div>
@@ -278,13 +286,12 @@
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-xs font-bold text-slate-400 uppercase">Bloklar</span>
                 </div>
-                <!-- Buttons Container -->
-                <div class="grid grid-cols-5 gap-2 md:gap-3" id="toolbox-buttons">
-                    <button onclick="addCommand('up')" id="btn-up" class="btn-press bg-blue-500 hover:bg-blue-400 text-white aspect-square rounded-2xl shadow-[0_4px_0_#1e40af] md:shadow-[0_6px_0_#1e40af] flex items-center justify-center text-3xl md:text-4xl transition-colors">⬆️</button>
-                    <button onclick="addCommand('down')" id="btn-down" class="btn-press bg-violet-500 hover:bg-violet-400 text-white aspect-square rounded-2xl shadow-[0_4px_0_#5b21b6] md:shadow-[0_6px_0_#5b21b6] flex items-center justify-center text-3xl md:text-4xl transition-colors">⬇️</button>
-                    <button onclick="addCommand('left')" id="btn-left" class="btn-press bg-amber-500 hover:bg-amber-400 text-white aspect-square rounded-2xl shadow-[0_4px_0_#92400e] md:shadow-[0_6px_0_#92400e] flex items-center justify-center text-3xl md:text-4xl transition-colors">⬅️</button>
-                    <button onclick="addCommand('right')" id="btn-right" class="btn-press bg-rose-500 hover:bg-rose-400 text-white aspect-square rounded-2xl shadow-[0_4px_0_#9f1239] md:shadow-[0_6px_0_#9f1239] flex items-center justify-center text-3xl md:text-4xl transition-colors">➡️</button>
-                    <button onclick="addCommand('collect')" id="btn-collect" class="btn-press bg-emerald-500 hover:bg-emerald-400 text-white aspect-square rounded-2xl shadow-[0_4px_0_#065f46] md:shadow-[0_6px_0_#065f46] flex items-center justify-center text-3xl md:text-4xl transition-colors" title="Al/Topla">🖐️</button>
+                <!-- Buttons Container - COLLECT BUTTON REMOVED -->
+                <div class="grid grid-cols-4 gap-2 md:gap-3" id="toolbox-buttons">
+                    <button onclick="addCommand('up')" id="btn-up" class="btn-press bg-blue-500 hover:bg-blue-400 text-white aspect-square rounded-2xl shadow-[0_4px_0_#1e40af] md:shadow-[0_6px_0_#1e40af] flex items-center justify-center text-4xl transition-colors">⬆️</button>
+                    <button onclick="addCommand('down')" id="btn-down" class="btn-press bg-violet-500 hover:bg-violet-400 text-white aspect-square rounded-2xl shadow-[0_4px_0_#5b21b6] md:shadow-[0_6px_0_#5b21b6] flex items-center justify-center text-4xl transition-colors">⬇️</button>
+                    <button onclick="addCommand('left')" id="btn-left" class="btn-press bg-amber-500 hover:bg-amber-400 text-white aspect-square rounded-2xl shadow-[0_4px_0_#92400e] md:shadow-[0_6px_0_#92400e] flex items-center justify-center text-4xl transition-colors">⬅️</button>
+                    <button onclick="addCommand('right')" id="btn-right" class="btn-press bg-rose-500 hover:bg-rose-400 text-white aspect-square rounded-2xl shadow-[0_4px_0_#9f1239] md:shadow-[0_6px_0_#9f1239] flex items-center justify-center text-4xl transition-colors">➡️</button>
                 </div>
                 <!-- Hint Hand Container -->
                 <div id="hint-container" class="absolute inset-0 pointer-events-none z-50 hidden"></div>
@@ -327,14 +334,12 @@
     </main>
 
     <script>
-        // --- Game Config & Persistence ---
-        const SAVE_KEY = 'minik_kodlamacilar_save_v1';
-        let gameSpeed = 600; // ms (Slow default)
+        const SAVE_KEY = 'minik_kodlamacilar_save_v2'; // Changed key to reset legacy data
+        let gameSpeed = 600;
         let isFastMode = false;
         let hintTimer = null;
-        let hintDelay = 15000; // 15 seconds for hint
+        let hintDelay = 15000;
 
-        // --- Theme Engine ---
         const themes = {
             ice: { name: 'Buz Devri', bgClass: 'bg-cyan-100', cellClass: 'bg-cyan-50 border-cyan-100', obstacleIcon: '🧊', playerIcon: '🐿️', defaultFacing: 'left', targetPrimary: '🌰', targetSecondary: '🥥', dotColor: '#ef4444', accentText: 'text-cyan-600' },
             dino: { name: 'Dinozor', bgClass: 'bg-stone-200', cellClass: 'bg-stone-50 border-stone-200', obstacleIcon: '🌋', playerIcon: '🦖', defaultFacing: 'left', targetPrimary: '🍖', targetSecondary: '🥚', dotColor: '#3b82f6', accentText: 'text-stone-600' },
@@ -343,9 +348,7 @@
             rabbit: { name: 'Orman', bgClass: 'bg-green-100', cellClass: 'bg-green-50 border-green-200', obstacleIcon: '🪵', playerIcon: '🐰', defaultFacing: 'left', targetPrimary: '🥕', targetSecondary: '🥦', dotColor: '#ef4444', accentText: 'text-green-600' }
         };
 
-        let currentTheme = themes.ice; // Default
-
-        // --- Game Logic ---
+        let currentTheme = themes.ice;
         let currentLevelIndex = 0;
         let workspace = [];
         let isRunning = false;
@@ -355,7 +358,7 @@
         let maxUnlockedLevel = 0;
         let levelStars = {};
 
-        // BÖLÜMLER
+        // Removed 'collect_ordered' logic and updated 'optimal' steps as 'collect' command is removed
         const levels = [
             // --- BÖLÜM 1 ---
             { id: 1, chapter: "BÖLÜM 1", subLevel: 1, gridSize: 5, start: { x: 0, y: 2 }, items: [{ x: 3, y: 2, type: 'primary', collected: false }], obstacles: [], prefilled: [], goal: 'reach_target', optimal: 3, dialogue: "Hey! Karnım çok aç, şu palamuda gitmeme yardım et!" },
@@ -377,20 +380,17 @@
             { id: 11, chapter: "BÖLÜM 4", subLevel: 2, gridSize: 5, start: { x: 0, y: 2 }, items: [{ x: 4, y: 2, type: 'primary', collected: false }], obstacles: [{x:2, y:2}, {x:2, y:1}, {x:2, y:3}], prefilled: [], goal: 'reach_target', optimal: 6, dialogue: "Etrafından dolaşmamız gerekecek." }, 
             { id: 12, chapter: "BÖLÜM 4", subLevel: 3, gridSize: 5, start: { x: 0, y: 0 }, items: [{ x: 4, y: 0, type: 'primary', collected: false }], obstacles: [{x:1, y:0}, {x:3, y:0}, {x:1, y:1}, {x:3, y:1}], prefilled: [], goal: 'reach_target', optimal: 8, dialogue: "Zikzak çizmemiz lazım!" }, 
 
-            // --- BÖLÜM 5 ---
-            { id: 13, chapter: "BÖLÜM 5", subLevel: 1, gridSize: 5, start: { x: 2, y: 2 }, items: [{ x: 2, y: 0, type: 'primary', collected: false, order: 1 }], obstacles: [], prefilled: [], goal: 'collect_ordered', optimal: 3, dialogue: "Hedefin üstüne gelince 'Topla' bloğunu kullan." },
-            { id: 14, chapter: "BÖLÜM 5", subLevel: 2, gridSize: 5, start: { x: 0, y: 2 }, items: [{ x: 2, y: 2, type: 'primary', collected: false, order: 1 }, { x: 4, y: 2, type: 'secondary', collected: false, order: 2 }], obstacles: [], prefilled: [], goal: 'collect_ordered', optimal: 5, dialogue: "Önce birinciyi, sonra ikinciyi topla!" },
-            { id: 15, chapter: "BÖLÜM 5", subLevel: 3, gridSize: 5, start: { x: 2, y: 2 }, items: [{ x: 2, y: 0, type: 'primary', collected: false, order: 1 }, { x: 2, y: 4, type: 'secondary', collected: false, order: 2 }], obstacles: [{x:1, y:2}, {x:3, y:2}], prefilled: [], goal: 'collect_ordered', optimal: 6, dialogue: "Hepsini topla ve bölümü bitir!" }
+            // --- BÖLÜM 5 (Simplified: No more explicit collect command needed) ---
+            { id: 13, chapter: "BÖLÜM 5", subLevel: 1, gridSize: 5, start: { x: 2, y: 2 }, items: [{ x: 2, y: 0, type: 'primary', collected: false, order: 1 }], obstacles: [], prefilled: [], goal: 'collect_all', optimal: 2, dialogue: "Üstüne gitmen yeterli!" },
+            { id: 14, chapter: "BÖLÜM 5", subLevel: 2, gridSize: 5, start: { x: 0, y: 2 }, items: [{ x: 2, y: 2, type: 'primary', collected: false, order: 1 }, { x: 4, y: 2, type: 'secondary', collected: false, order: 2 }], obstacles: [], prefilled: [], goal: 'collect_all', optimal: 4, dialogue: "Hepsini topla!" },
+            { id: 15, chapter: "BÖLÜM 5", subLevel: 3, gridSize: 5, start: { x: 2, y: 2 }, items: [{ x: 2, y: 0, type: 'primary', collected: false, order: 1 }, { x: 2, y: 4, type: 'secondary', collected: false, order: 2 }], obstacles: [{x:1, y:2}, {x:3, y:2}], prefilled: [], goal: 'collect_all', optimal: 4, dialogue: "Engellere dikkat et." }
         ];
-
-        // --- Functions ---
 
         function initGame() {
             loadProgress();
-            loadLevel(currentLevelIndex); // Loads the saved level or 0
+            loadLevel(currentLevelIndex);
         }
 
-        // --- Persistence ---
         function saveProgress() {
             const data = {
                 level: currentLevelIndex,
@@ -405,14 +405,10 @@
             if (saved) {
                 try {
                     const data = JSON.parse(saved);
-                    // Only restore maxUnlocked and stars. 
-                    // currentLevelIndex is better set to the furthest unlocked level or last played
                     maxUnlockedLevel = data.maxUnlocked || 0;
                     levelStars = data.stars || {};
                     currentLevelIndex = data.level > maxUnlockedLevel ? maxUnlockedLevel : data.level;
-                } catch (e) {
-                    console.error("Save file corrupted, resetting.");
-                }
+                } catch (e) { console.error("Save corrupted"); }
             }
         }
 
@@ -441,9 +437,12 @@
         }
 
         function loadLevel(idx) {
+            // Check bounds and locked state
+            if (idx < 0) idx = 0;
+            if (idx >= levels.length) idx = levels.length - 1;
             if (idx > maxUnlockedLevel) return;
 
-            resetHintTimer(); // Stop any pending hints
+            resetHintTimer();
             currentLevelIndex = idx;
             const level = levels[currentLevelIndex];
             
@@ -454,14 +453,12 @@
             document.getElementById('fail-modal').classList.add('hidden');
             document.getElementById('level-menu').classList.add('hidden');
             
-            // Instruction
             const instructionEl = document.getElementById('instruction-text');
-            if (level.goal === 'collect_ordered') instructionEl.innerText = "Sırayla Topla!";
+            if (level.goal === 'collect_all') instructionEl.innerText = "Hepsini Topla!";
             else if (level.chapter.includes("HATA")) instructionEl.innerText = "Hatayı Düzelt";
             else if (level.chapter.includes("TAMAMLA")) instructionEl.innerText = "Kodu Tamamla";
             else instructionEl.innerText = "Hedefe Ulaş";
 
-            // Reset
             workspace = [...level.prefilled];
             playerPos = { ...level.start };
             collectedItems = 0;
@@ -472,37 +469,40 @@
             renderWorkspace();
             renderBoard();
             
-            // Dialogue
             if (level.dialogue) showDialogue(level.dialogue, level.start.x, level.start.y);
 
-            // Save current position as we loaded it
             saveProgress();
             startHintTimer();
         }
 
+        function prevLevel() {
+            if (currentLevelIndex > 0) loadLevel(currentLevelIndex - 1);
+        }
+
+        function nextLevel() {
+            if (currentLevelIndex < levels.length - 1 && currentLevelIndex < maxUnlockedLevel) {
+                loadLevel(currentLevelIndex + 1);
+            } else if (currentLevelIndex === maxUnlockedLevel && currentLevelIndex < levels.length - 1) {
+                // Cant go next if not unlocked, unless we just won (handled in checkWin)
+                // Just shake or do nothing
+            }
+        }
+
         function showDialogue(text, x, y) {
-            // Remove old bubbles
             const old = document.querySelectorAll('.speech-bubble');
             old.forEach(el => el.remove());
-
             const cell = document.getElementById(`cell-${x}-${y}`);
             if (cell) {
                 const bubble = document.createElement('div');
                 bubble.className = 'speech-bubble';
                 bubble.innerText = text;
-                // Position above the cell slightly
                 bubble.style.bottom = '100%';
                 bubble.style.marginBottom = '15px';
                 cell.appendChild(bubble);
-
-                // Auto hide
-                setTimeout(() => {
-                    if(bubble) bubble.remove();
-                }, 4000);
+                setTimeout(() => { if(bubble) bubble.remove(); }, 4000);
             }
         }
 
-        // --- Hint System ---
         function startHintTimer() {
             clearTimeout(hintTimer);
             document.getElementById('hint-container').innerHTML = '';
@@ -512,20 +512,15 @@
         function resetHintTimer() {
             clearTimeout(hintTimer);
             document.getElementById('hint-container').innerHTML = '';
-            // Only restart if not running
             if (!isRunning) hintTimer = setTimeout(showHint, hintDelay);
         }
 
         function showHint() {
             if (isRunning) return;
             const level = levels[currentLevelIndex];
-            
-            // Very basic heuristic: Find first uncollected item and suggest move towards it
-            // This is naive (doesn't account for walls perfectly) but good enough for 1st grade levels
             const target = level.items.find(i => !i.collected);
             if (!target) return;
 
-            // Simulate current workspace to find where robot ends up
             let simX = level.start.x;
             let simY = level.start.y;
             workspace.forEach(cmd => {
@@ -536,16 +531,10 @@
             });
 
             let suggestedBtnId = '';
-            
-            // Prioritize X or Y diff? simple check
             if (target.x > simX) suggestedBtnId = 'btn-right';
             else if (target.x < simX) suggestedBtnId = 'btn-left';
             else if (target.y > simY) suggestedBtnId = 'btn-down';
             else if (target.y < simY) suggestedBtnId = 'btn-up';
-            else if (simX === target.x && simY === target.y) suggestedBtnId = 'btn-collect';
-
-            // Check for obstacle collision in suggestion (Basic 1-step lookahead)
-            // If suggested move hits wall, try other axis? (Skipped for brevity, naive works 90%)
 
             if (suggestedBtnId) {
                 const btn = document.getElementById(suggestedBtnId);
@@ -553,19 +542,14 @@
                 const hand = document.createElement('div');
                 hand.className = 'hint-hand';
                 hand.innerText = '👆';
-                
-                // Calculate position relative to container
                 const btnRect = btn.getBoundingClientRect();
                 const containerRect = container.getBoundingClientRect();
-                
                 hand.style.left = (btnRect.left - containerRect.left + btnRect.width/2 - 20) + 'px';
                 hand.style.top = (btnRect.top - containerRect.top + btnRect.height) + 'px';
-                
                 container.appendChild(hand);
             }
         }
 
-        // --- Drag & Drop ---
         let dragSrcEl = null;
         let dragSrcIndex = -1;
 
@@ -584,22 +568,16 @@
             return false;
         }
 
-        function handleDragLeave(e) {
-            this.classList.remove('drag-over');
-        }
+        function handleDragLeave(e) { this.classList.remove('drag-over'); }
 
         function handleDrop(e) {
             if (e.stopPropagation) e.stopPropagation();
             this.classList.remove('drag-over');
-
             const dragDestIndex = parseInt(this.getAttribute('data-index'));
-
             if (dragSrcIndex !== dragDestIndex) {
-                // Swap in array
                 const item = workspace[dragSrcIndex];
                 workspace.splice(dragSrcIndex, 1);
                 workspace.splice(dragDestIndex, 0, item);
-                
                 renderWorkspace();
                 renderBoard();
                 resetHintTimer();
@@ -609,12 +587,8 @@
 
         function handleDragEnd(e) {
             this.classList.remove('dragging');
-            const items = document.querySelectorAll('#code-grid .group');
-            items.forEach(item => item.classList.remove('drag-over'));
+            document.querySelectorAll('#code-grid .group').forEach(item => item.classList.remove('drag-over'));
         }
-
-
-        // --- Render Board & Workspace ---
 
         function calculatePath() {
             if (isRunning) return [];
@@ -623,7 +597,6 @@
             let simY = level.start.y;
             let path = [];
             workspace.forEach(cmd => {
-                if (cmd === 'collect') return;
                 let nextX = simX, nextY = simY;
                 if (cmd === 'up') nextY--;
                 if (cmd === 'down') nextY++;
@@ -705,7 +678,6 @@
                     case 'down': color = 'bg-violet-500 border-violet-600'; icon = '⬇️'; break;
                     case 'left': color = 'bg-amber-500 border-amber-600'; icon = '⬅️'; break;
                     case 'right': color = 'bg-rose-500 border-rose-600'; icon = '➡️'; break;
-                    case 'collect': color = 'bg-emerald-500 border-emerald-600'; icon = '🖐️'; break;
                 }
 
                 const el = document.createElement('div');
@@ -713,7 +685,6 @@
                 el.setAttribute('draggable', 'true');
                 el.setAttribute('data-index', index);
                 
-                // Drag Events
                 el.addEventListener('dragstart', handleDragStart);
                 el.addEventListener('dragover', handleDragOver);
                 el.addEventListener('dragleave', handleDragLeave);
@@ -730,8 +701,6 @@
             const area = document.getElementById('code-area');
             area.scrollTop = area.scrollHeight;
         }
-
-        // --- Commands ---
 
         function addCommand(cmd) {
             if (isRunning) return;
@@ -772,7 +741,7 @@
 
             for (let i = 0; i < workspace.length; i++) {
                 await executeCommand(workspace[i]);
-                await new Promise(r => setTimeout(r, gameSpeed)); // Use gameSpeed variable
+                await new Promise(r => setTimeout(r, gameSpeed));
             }
 
             checkWin();
@@ -794,6 +763,7 @@
             if (cmd === 'left') newX--;
             if (cmd === 'right') newX++;
 
+            // Bounds
             if (newX < 0 || newX >= level.gridSize || newY < 0 || newY >= level.gridSize) {
                 shakeBoard(); return;
             }
@@ -802,28 +772,19 @@
                 shakeBoard(); return;
             }
 
-            if (cmd === 'collect') {
-                const item = level.items.find(i => i.x === playerPos.x && i.y === playerPos.y && !i.collected);
-                if (item) {
-                    if (level.goal === 'collect_ordered') {
-                        if (item.order === collectedItems + 1) {
-                            item.collected = true;
-                            collectedItems++;
-                            createConfetti(playerPos.x, playerPos.y);
-                        } else {
-                            shakeBoard();
-                        }
-                    } else {
-                        item.collected = true;
-                        createConfetti(playerPos.x, playerPos.y);
-                    }
-                } else {
-                    shakeBoard();
-                }
-            } else {
-                playerPos.x = newX;
-                playerPos.y = newY;
+            // Move
+            playerPos.x = newX;
+            playerPos.y = newY;
+            
+            // Check Auto Collect
+            const item = level.items.find(i => i.x === playerPos.x && i.y === playerPos.y && !i.collected);
+            if (item) {
+                // Auto collect - order is simplified/ignored per user feedback to reduce confusion
+                item.collected = true;
+                createConfetti(playerPos.x, playerPos.y);
+                collectedItems++;
             }
+
             renderBoard();
         }
 
@@ -860,6 +821,8 @@
         function checkWin() {
             const level = levels[currentLevelIndex];
             let won = false;
+            
+            // Logic: if goal is reach_target, check robot pos. If collect_all, check all collected.
             if (level.goal === 'reach_target') {
                 const targets = level.items;
                 const onTarget = targets.find(t => t.x === playerPos.x && t.y === playerPos.y);
@@ -881,7 +844,7 @@
                 if (!levelStars[currentLevelIndex] || stars > levelStars[currentLevelIndex]) {
                     levelStars[currentLevelIndex] = stars;
                 }
-                saveProgress(); // Save on win
+                saveProgress();
                 showWinModal(stars);
             } else {
                 document.getElementById('fail-modal').classList.remove('hidden');
@@ -901,17 +864,18 @@
         }
 
         function nextLevel() {
-            if (currentLevelIndex < levels.length - 1) {
-                loadLevel(currentLevelIndex + 1);
-            } else {
+            if (currentLevelIndex < levels.length - 1 && currentLevelIndex < maxUnlockedLevel) {
+                 loadLevel(currentLevelIndex + 1);
+            } else if (currentLevelIndex === levels.length - 1) {
                 alert("Tebrikler! Tüm seviyeleri bitirdin.");
                 toggleLevelMenu();
+            } else {
+                // Try to load next even if logic says wait, checkWin unlocks it first usually
+                if(currentLevelIndex < levels.length - 1) loadLevel(currentLevelIndex + 1);
             }
         }
 
-        function retryLevel() {
-            loadLevel(currentLevelIndex);
-        }
+        function retryLevel() { loadLevel(currentLevelIndex); }
 
         function toggleLevelMenu() {
             const menu = document.getElementById('level-menu');
@@ -926,26 +890,24 @@
                 const isLocked = idx > maxUnlockedLevel;
                 const stars = levelStars[idx] || 0;
                 const btn = document.createElement('button');
-                btn.className = `p-4 rounded-xl flex flex-col items-center justify-center relative border-2 ${isLocked ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-white border-blue-200 hover:border-blue-400 text-slate-700 shadow-sm'}`;
+                btn.className = `p-4 rounded-xl flex flex-col items-center justify-center relative border-4 transition-all ${isLocked ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-white border-blue-200 hover:border-blue-400 hover:scale-105 text-slate-700 shadow-md'}`;
                 if (isLocked) {
-                    btn.innerHTML = `<span class="text-2xl mb-1">🔒</span><span class="text-xs font-bold">Seviye ${idx+1}</span>`;
+                    btn.innerHTML = `<span class="text-3xl mb-1 grayscale opacity-50">🔒</span><span class="text-xs font-bold">Seviye ${idx+1}</span>`;
                 } else {
                     let starStr = '';
                     for(let i=0; i<3; i++) starStr += i < stars ? '⭐' : '☆';
                     btn.innerHTML = `
-                        <span class="text-xl font-bold mb-1">${idx+1}</span>
+                        <span class="text-2xl font-black mb-1">${idx+1}</span>
                         <span class="text-[10px] text-yellow-500 tracking-tighter">${starStr}</span>
                     `;
-                    btn.onclick = () => loadLevel(idx);
+                    btn.onclick = () => { loadLevel(idx); toggleLevelMenu(); };
                 }
-                if(idx === currentLevelIndex) btn.classList.add('ring-2', 'ring-blue-500');
+                if(idx === currentLevelIndex) btn.classList.add('ring-4', 'ring-blue-500', 'ring-offset-2');
                 grid.appendChild(btn);
             });
         }
 
-        // Init
         initGame();
-
     </script>
 </body>
 </html>
